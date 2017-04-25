@@ -58,9 +58,6 @@ public class SunsetFragment extends Fragment {
         final LayerDrawable layers = (LayerDrawable) getActivity().getResources().getDrawable(R.drawable.sun).mutate();
         mSunRings = layers.findDrawableByLayerId(R.id.sun_rings).mutate();
 
-        final ValueAnimator hideRingsAnimation = ValueAnimator.ofInt(230, 0);
-        hideRingsAnimation.setDuration(500);
-
         final ValueAnimator showRingsAnimation = ValueAnimator.ofInt(0, 180);
         showRingsAnimation.setDuration(1300)
                 .setRepeatCount(ValueAnimator.INFINITE);
