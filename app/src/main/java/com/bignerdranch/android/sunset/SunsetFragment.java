@@ -3,7 +3,10 @@ package com.bignerdranch.android.sunset;
 import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
+
+import static android.animation.ObjectAnimator.ofInt;
 
 /**
  * Created by Chris on 4/24/2017.
@@ -27,6 +32,7 @@ public class SunsetFragment extends Fragment {
     private int mSunsetSkyColor;
     private int mNightSkyColor;
     private boolean mAnimationForward;
+    private Drawable mSunRings;
 
     public static SunsetFragment newInstance() {
         return new SunsetFragment();
@@ -41,6 +47,41 @@ public class SunsetFragment extends Fragment {
 
         mSceneView = view;
 
+        mSunView = view.findViewById(R.id.sun);
+        mSkyView = view.findViewById(R.id.sky);
+
+        final Resources resources = getResources();
+        mBlueSkyColor = resources.getColor(R.color.blue_sky);
+        mSunsetSkyColor = resources.getColor(R.color.sunset_sky);
+        mNightSkyColor = resources.getColor(R.color.night_sky);
+
+        final LayerDrawable layers = (LayerDrawable) getActivity().getResources().getDrawable(R.drawable.sun).mutate();
+        mSunRings = layers.findDrawableByLayerId(R.id.sun_rings).mutate();
+
+        final ValueAnimator hideRingsAnimation = ValueAnimator.ofInt(230, 0);
+        hideRingsAnimation.setDuration(500);
+
+        final ValueAnimator showRingsAnimation = ValueAnimator.ofInt(0, 180);
+        showRingsAnimation.setDuration(1300)
+                .setRepeatCount(ValueAnimator.INFINITE);
+
+        showRingsAnimation.setRepeatMode(ValueAnimator.REVERSE);
+
+        showRingsAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        showRingsAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int alphaValue = (int) animation.getAnimatedValue();
+                mSunRings.setAlpha(alphaValue);
+                mSunRings.invalidateSelf();
+                mSunView.setBackground(layers);
+            }
+        });
+
+        showRingsAnimation.start();
+
+
         mSceneView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,19 +91,11 @@ public class SunsetFragment extends Fragment {
                     // Update direction for next click
                     mAnimationForward = false;
                 } else {
-                  reverseAnimation();
-                  mAnimationForward = true;
+                    reverseAnimation();
+                    mAnimationForward = true;
                 }
             }
         });
-
-        mSunView = view.findViewById(R.id.sun);
-        mSkyView = view.findViewById(R.id.sky);
-
-        Resources resources = getResources();
-        mBlueSkyColor = resources.getColor(R.color.blue_sky);
-        mSunsetSkyColor = resources.getColor(R.color.sunset_sky);
-        mNightSkyColor = resources.getColor(R.color.night_sky);
 
         return view;
     }
@@ -77,15 +110,15 @@ public class SunsetFragment extends Fragment {
 
         heightAnimator.setInterpolator(new AccelerateInterpolator());
 
-        ObjectAnimator sunsetSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor", mBlueSkyColor, mSunsetSkyColor)
-                .setDuration(3000);
+        ObjectAnimator sunsetSkyAnimator =
+                ofInt(mSkyView, "backgroundColor", mBlueSkyColor, mSunsetSkyColor)
+                        .setDuration(3000);
 
         sunsetSkyAnimator.setEvaluator(new ArgbEvaluator());
 
-        ObjectAnimator nightSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor", mSunsetSkyColor, mNightSkyColor)
-                .setDuration(3000);
+        ObjectAnimator nightSkyAnimator =
+                ofInt(mSkyView, "backgroundColor", mSunsetSkyColor, mNightSkyColor)
+                        .setDuration(3000);
 
         nightSkyAnimator.setEvaluator(new ArgbEvaluator());
 
@@ -106,14 +139,14 @@ public class SunsetFragment extends Fragment {
                 .setDuration(6000);
         heightAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        ObjectAnimator sunsetSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor", mNightSkyColor, mSunsetSkyColor)
-                .setDuration(1000);
+        ObjectAnimator sunsetSkyAnimator =
+                ObjectAnimator.ofInt(mSkyView, "backgroundColor", mNightSkyColor, mSunsetSkyColor)
+                        .setDuration(1000);
         sunsetSkyAnimator.setEvaluator(new ArgbEvaluator());
 
-        ObjectAnimator blueSkyAnimator = ObjectAnimator
-                .ofInt(mSkyView, "backgroundColor", mSunsetSkyColor, mBlueSkyColor)
-                .setDuration(5000);
+        ObjectAnimator blueSkyAnimator =
+                ObjectAnimator.ofInt(mSkyView, "backgroundColor", mSunsetSkyColor, mBlueSkyColor)
+                        .setDuration(5000);
 
         blueSkyAnimator.setStartDelay(1000);
         blueSkyAnimator.setEvaluator(new ArgbEvaluator());
@@ -125,4 +158,5 @@ public class SunsetFragment extends Fragment {
                 .with(blueSkyAnimator);
         animatorSet.start();
     }
+
 }

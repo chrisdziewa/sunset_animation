@@ -17,7 +17,8 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
-            android:src="@drawable/sun"/>
+            android:background="@drawable/sun"/>
+
     </FrameLayout>
 
     <View
